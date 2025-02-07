@@ -1,0 +1,19 @@
+FROM  golang:1.23.6-bookworm AS builder
+
+WORKDIR /app
+
+COPY ./bluengo-prueba-jvs/go.mod ./bluengo-prueba-jvs/go.sum ./
+
+RUN go mod download
+
+COPY ./bluengo-prueba-jvs ./
+
+RUN go build -o bluengo-prueba-jvs
+
+FROM debian:bookworm
+
+WORKDIR /app
+
+COPY --from=builder /app/bluengo-prueba-jvs ./
+
+ENTRYPOINT /app/bluengo-prueba-jvs worker
