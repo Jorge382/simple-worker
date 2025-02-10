@@ -99,11 +99,12 @@ jobs:
         with:
           path: artifacts
 
-      - name: List downloaded artifacts
+      - name: Mover archivos ZIP a la raíz de artifacts
         run: |
-          echo "Listando archivos descargados:"
+          find artifacts -mindepth 2 -type f -exec mv {} artifacts/ \;
+          echo "Archivos en artifacts después de mover:"
           ls -lah artifacts
-
+     
       - name: Crear Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -115,7 +116,7 @@ jobs:
             artifacts/app_bluengo-prueba-jvs_linux_amd64.zip
             artifacts/app_bluengo-prueba-jvs_linux_arm64.zip
             artifacts/app_bluengo-prueba-jvs_windows_amd64.zip
-            artifacts/app_bluengo-prueba-jvs_windows_arm64.zip.zip
+            artifacts/app_bluengo-prueba-jvs_windows_arm64.zip
 
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
