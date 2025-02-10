@@ -23,6 +23,9 @@ jobs:
         with:
           go-version: 1.23.5
 
+      - name: Install zip utility
+        run: sudo apt-get install -y zip
+
       - name: Verify Go module
         run: |
           cd ${{ matrix.project }}
@@ -42,14 +45,30 @@ jobs:
         run: |
           OUTPUT_DIR=$GITHUB_WORKSPACE/bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
           ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-
+          
           if [ ! -f "$OUTPUT_DIR/app" ]; then
             echo "Error: El binario no fue generado correctamente."
             exit 1
           fi
 
           cd $OUTPUT_DIR
-          zip -j $GITHUB_WORKSPACE/bin/$ZIP_NAME app
+          zip -j $ZIP_NAME app
+          mv $ZIP_NAME $GITHUB_WORKSPACE/bin/
+
+      - name: Verify ZIP file
+        run: |
+          ZIP_PATH=$GITHUB_WORKSPACE/bin/app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          if [ -f "$ZIP_PATH" ]; then
+            echo "El archivo ZIP se creó correctamente: $ZIP_PATH"
+          else
+            echo "Error: El archivo ZIP no se creó correctamente."
+            exit 1
+          fi
+
+      - name: List ZIP files
+        run: |
+          echo "Listando archivos ZIP:"
+          ls -lah $GITHUB_WORKSPACE/bin/
 
       - name: Upload artifact (ZIP)
         uses: actions/upload-artifact@v4
@@ -64,16 +83,16 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
       - name: Install GitHub CLI
         run: |
           sudo apt update
           sudo apt install -y gh
           echo "${{ secrets.TOKEN_GITHUB }}" | gh auth login --with-token
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
       - name: Create GitHub Release
         id: create_release
