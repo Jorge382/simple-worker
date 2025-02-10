@@ -23,16 +23,34 @@ jobs:
         with:
           go-version: 1.23.5
 
+      - name: Verify Go module
+        run: |
+          cd ${{ matrix.project }}
+          go mod tidy
+          go mod download
+
+      - name: Create output directory
+        run: mkdir -p bin
+
       - name: Build
         run: |
           cd ${{ matrix.project }}
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/app main.go
 
-      - name: Upload artifact
+      - name: Generate unique name for ZIP
+        id: zip_name
+        run: echo "ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}_$(date +'%Y%m%d%H%M%S').zip" >> $GITHUB_ENV
+
+      - name: Zip executable
+        run: |
+          cd bin
+          zip -j $ZIP_NAME app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
+
+      - name: Upload artifact (ZIP)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}_binaries
-          path: bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/app
+          name: ${{ env.ZIP_NAME }}
+          path: bin/${{ env.ZIP_NAME }}
 
   release:
     needs: build
