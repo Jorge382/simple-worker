@@ -92,6 +92,7 @@ jobs:
           TAG="v1.0.1"  # Aquí defines la etiqueta que deseas usar
           git tag $TAG
           git push origin $TAG
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Descargar los artefactos del build
         uses: actions/download-artifact@v4
@@ -102,6 +103,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }} 
           files: |
             artifacts/app_bluengo-prueba-jvs_darwin_amd64.zip
             artifacts/app_bluengo-prueba-jvs_darwin_arm64.zip
