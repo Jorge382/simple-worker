@@ -99,18 +99,23 @@ jobs:
         with:
           path: artifacts
 
+      - name: List downloaded artifacts
+        run: |
+          echo "Listando archivos descargados:"
+          ls -lah artifacts
+          
       - name: Crear Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }} 
           files: |
-            artifacts/bin/app_bluengo-prueba-jvs_darwin_amd64.zip
-            artifacts/bin/app_bluengo-prueba-jvs_darwin_arm64.zip
-            artifacts/bin/app_bluengo-prueba-jvs_linux_amd64.zip
-            artifacts/bin/app_bluengo-prueba-jvs_linux_arm64.zip
-            artifacts/bin/app_bluengo-prueba-jvs_windows_amd64.zip
-            artifacts/bin/app_bluengo-prueba-jvs_windows_arm64.zip
+            artifacts/app_bluengo-prueba-jvs_darwin_amd64.zip
+            artifacts/app_bluengo-prueba-jvs_darwin_arm64.zip
+            artifacts/app_bluengo-prueba-jvs_linux_amd64.zip
+            artifacts/app_bluengo-prueba-jvs_linux_arm64.zip
+            artifacts/app_bluengo-prueba-jvs_windows_amd64.zip
+            artifacts/app_bluengo-prueba-jvs_windows_arm64.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN.GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
 
