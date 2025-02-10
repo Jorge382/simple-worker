@@ -86,4 +86,12 @@ jobs:
 
       - name: Upload individual release assets
         env:
-         
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        run: |
+          echo "Listando archivos ZIP a subir:"
+          ls -lah artifacts
+
+          for file in artifacts/*.zip; do
+            echo "Subiendo $file..."
+            gh release upload 1.1.0 "$file" --clobber
+          done
