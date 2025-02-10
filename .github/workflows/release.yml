@@ -76,43 +76,30 @@ jobs:
           name: app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
           path: bin/app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
 
-  release:
-    needs: build
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
+release:
+  needs: build  # Dependiendo de si necesitas la salida del job 'build'
+  runs-on: ubuntu-latest
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install -y gh
-          echo "${{ secrets.TOKEN_GITHUB }}" | gh auth login --with-token
+  steps:
+    - name: Verificar el código
+      uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+    - name: Descargar los artefactos del build
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "1.1.0"
-          release_name: "Release 1.1.0"
-          body: "Release de ejecutables versión 1.1.0"
-          draft: false
-          prerelease: false
-
-      - name: Upload individual release assets
-        run: |
-          echo "Listando archivos ZIP a subir:"
-          ls -lah artifacts
-
-          for file in artifacts/*.zip; do
-            echo "Subiendo $file..."
-            gh release upload 1.1.0 "$file" --clobber
-          done
+    - name: Crear Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          artifacts/app_bluengo-prueba-jvs_darwin_amd64.zip
+          artifacts/app_bluengo-prueba-jvs_darwin_arm64.zip
+          artifacts/app_bluengo-prueba-jvs_linux_amd64.zip
+          artifacts/app_bluengo-prueba-jvs_linux_arm64.zip
+          artifacts/app_bluengo-prueba-jvs_windows_amd64.zip
+          artifacts/app_bluengo-prueba-jvs_windows_arm64.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
