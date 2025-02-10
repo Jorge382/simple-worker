@@ -84,6 +84,13 @@ jobs:
       - name: Verificar el código
         uses: actions/checkout@v4
 
+      - name: Crear una etiqueta (tag)
+        id: create_tag
+        run: |
+          TAG="v1.1.0"  # Aquí defines la etiqueta que deseas usar
+          git tag $TAG
+          git push origin $TAG
+
       - name: Descargar los artefactos del build
         uses: actions/download-artifact@v4
         with:
