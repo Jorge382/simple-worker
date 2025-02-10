@@ -99,25 +99,27 @@ jobs:
         with:
           path: artifacts
 
-      - name: Mover archivos ZIP a la raíz de artifacts
-        run: |
-          # Iteramos sobre cada subdirectorio dentro de artifacts
-          for d in artifacts/*; do
-          if [ -d "$d" ]; then
-            # Mover el archivo ZIP contenido en el directorio a la carpeta artifacts
-            mv "$d"/*.zip artifacts/
-            # Borrar el directorio vacío
-            rm -rf "$d"
-          fi
-          done
-          echo "Archivos en artifacts después de mover:"
-          ls -lah artifacts
-
       - name: List downloaded artifacts
         run: |
           echo "Listando archivos descargados:"
           ls -lah artifacts
-     
+
+      - name: Aplanar la estructura de artefactos
+        run: |
+          mkdir -p artifacts_flat
+          # Para cada subdirectorio en artifacts (que tiene el nombre del artifact)
+          for d in artifacts/*; do
+            if [ -d "$d" ]; then
+              # Mover el contenido (el archivo ZIP) a artifacts_flat
+              for f in "$d"/*.zip; do
+                echo "Moviendo $f a artifacts_flat/"
+                mv "$f" artifacts_flat/
+              done
+            fi
+          done
+          echo "Archivos en artifacts_flat:"
+          ls -lah artifacts_flat
+
       - name: Crear Release
         id: create_release
         uses: softprops/action-gh-release@v2
