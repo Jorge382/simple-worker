@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        goos: [windows, linux, darwin]
+        goarch: [amd64, arm64]
+        project: [bluengo-prueba-jvs] # Lista de tus proyectos
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23.5
+
+      - name: Build
+        run: |
+          cd ${{ matrix.project }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/hello main.go
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}_binaries
+          path: bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/hello

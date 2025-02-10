@@ -1,8 +1,6 @@
 name: Build and Push Docker Worker Image
 on:
-  push:
-    branches:
-    - develop
+  workflow_dispatch
 
 jobs:
   deploy:
