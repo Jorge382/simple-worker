@@ -101,8 +101,21 @@ jobs:
 
       - name: Mover archivos ZIP a la raíz de artifacts
         run: |
-          find artifacts -mindepth 2 -type f -exec mv {} artifacts/ \;
+          # Iteramos sobre cada subdirectorio dentro de artifacts
+          for d in artifacts/*; do
+          if [ -d "$d" ]; then
+            # Mover el archivo ZIP contenido en el directorio a la carpeta artifacts
+            mv "$d"/*.zip artifacts/
+            # Borrar el directorio vacío
+            rm -rf "$d"
+          fi
+          done
           echo "Archivos en artifacts después de mover:"
+          ls -lah artifacts
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Listando archivos descargados:"
           ls -lah artifacts
      
       - name: Crear Release
