@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-    - develop
+      - develop
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
       matrix:
         goos: [windows, linux, darwin]
         goarch: [amd64, arm64]
-        project: [bluengo-prueba-jvs] # Lista de tus proyectos
+        project: [bluengo-prueba-jvs]
 
     steps:
       - name: Check out the repository
@@ -29,30 +29,33 @@ jobs:
           go mod tidy
           go mod download
 
-      - name: Create output directory
-        run: mkdir -p bin
-
       - name: Build
         run: |
-          mkdir -p ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          OUTPUT_DIR=$GITHUB_WORKSPACE/bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          mkdir -p $OUTPUT_DIR
           cd ${{ matrix.project }}
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/app main.go
-
-
-      - name: Generate unique name for ZIP
-        id: zip_name
-        run: echo "ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip" >> $GITHUB_ENV
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $OUTPUT_DIR/app main.go
+          echo "Archivos generados:"
+          ls -lah $OUTPUT_DIR
 
       - name: Zip executable
         run: |
-          cd bin
-          zip -j $ZIP_NAME app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          OUTPUT_DIR=$GITHUB_WORKSPACE/bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}
+          ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          
+          if [ ! -f "$OUTPUT_DIR/app" ]; then
+            echo "Error: El binario no fue generado correctamente."
+            exit 1
+          fi
+
+          cd $OUTPUT_DIR
+          zip -j $GITHUB_WORKSPACE/bin/$ZIP_NAME app
 
       - name: Upload artifact (ZIP)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ZIP_NAME }}
-          path: bin/${{ env.ZIP_NAME }}
+          name: app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          path: bin/app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
 
   release:
     needs: build
@@ -63,9 +66,15 @@ jobs:
         with:
           path: artifacts
 
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+          gh auth status || gh auth login --with-token <<< "${{ secrets.TOKEN_GITHUB }}"
+
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1.1.4
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
@@ -77,11 +86,4 @@ jobs:
 
       - name: Upload individual release assets
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-        run: |
-          echo "Listando archivos ZIP a subir:"
-          ls -lah artifacts
-          for file in artifacts/*.zip; do
-            echo "Subiendo $file..."
-            gh release upload 1.1.0 "$file" --clobber
-          done
+         
