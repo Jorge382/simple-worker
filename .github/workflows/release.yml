@@ -2,10 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - develop
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
   build:
@@ -100,7 +98,7 @@ jobs:
 
       - name: Crear Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/app_bluengo-prueba-jvs_darwin_amd64.zip
@@ -110,5 +108,5 @@ jobs:
             artifacts/app_bluengo-prueba-jvs_windows_amd64.zip
             artifacts/app_bluengo-prueba-jvs_windows_arm64.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN.GITHUB }}
 
