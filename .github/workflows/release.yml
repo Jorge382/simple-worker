@@ -89,7 +89,7 @@ jobs:
       - name: Crear una etiqueta (tag)
         id: create_tag
         run: |
-          TAG="v1.1.0"  # Aquí defines la etiqueta que deseas usar
+          TAG="v1.0.1"  # Aquí defines la etiqueta que deseas usar
           git tag $TAG
           git push origin $TAG
 
