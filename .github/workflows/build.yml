@@ -26,10 +26,44 @@ jobs:
       - name: Build
         run: |
           cd ${{ matrix.project }}
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/hello main.go
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/app main.go
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}_binaries
           path: bin/${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}/hello
+release:
+  needs: build
+  runs-on: ubuntu-24.04
+  steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    # Se crea un zip con todos los ejecutables descargados
+    - name: Archive binaries
+      run: zip -r release-1.1.zip artifacts/
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        tag_name: "1.1"
+        release_name: "Release 1.1"
+        body: "Release de ejecutables versión 1.1"
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: release-1.1.zip
+        asset_name: release-1.1.zip
+        asset_content_type: application/zip
