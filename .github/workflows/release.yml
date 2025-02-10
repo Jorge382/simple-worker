@@ -39,7 +39,7 @@ jobs:
 
       - name: Generate unique name for ZIP
         id: zip_name
-        run: echo "ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}_$(date +'%Y%m%d%H%M%S').zip" >> $GITHUB_ENV
+        run: echo "ZIP_NAME=app_${{ matrix.project }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip" >> $GITHUB_ENV
 
       - name: Zip executable
         run: |
